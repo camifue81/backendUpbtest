@@ -1,0 +1,23 @@
+name: Deploy a Render
+
+# Cada push a main dispara el Deploy Hook de Render.
+# La URL del hook se guarda como secret en el environment "production" del repo.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Llamar al Deploy Hook de Render
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "Falta el secret RENDER_DEPLOY_HOOK_URL en el environment production"
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST "$RENDER_DEPLOY_HOOK_URL"
